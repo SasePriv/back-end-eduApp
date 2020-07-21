@@ -23,4 +23,6 @@ router.post('/getSingleModule', controllers.getSingleModule)
 
 router.get('/getLastestCourses', controllers.getLastestCourses)
 
+router.post('/eliminateCourse', controllers.eliminateCourse)
+
 module.exports = router;

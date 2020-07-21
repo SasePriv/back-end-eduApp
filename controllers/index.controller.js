@@ -249,10 +249,23 @@ indexCtrl.getAllCourses = async (req, res) => {
     const allCourses = await Course.find()
     const coursesGoodOrder = allCourses.reverse()
 
+    let vectorCourses = []
+
+    allCourses.forEach(async (each) => {
+        const modules = await ModuleCourses.find({coursesId: each._id}) 
+        const user = await User.find({_id: each.user_id})
+
+        vectorCourses.push({
+            course: each,
+            modulesCourse: modules,
+            userCourse: user
+        })
+    });
+
     if (allCourses) {
         res.json({
             response: true,
-            data: coursesGoodOrder
+            data: vectorCourses
         })
     } else {
         res.json({
@@ -264,11 +277,28 @@ indexCtrl.getAllCourses = async (req, res) => {
 
 indexCtrl.getLastestCourses = async (req, res) => {
     const allCourses = await Course.find().sort({_id: -1}).limit(10)
+
+    let vectorCourses = []
+
+    allCourses.forEach(async (each) => {
+        console.log(each)
+        const modules = await ModuleCourses.find({coursesId: each._id}) 
+        const user = await User.find({_id: each.user_id})
+
+        
+        vectorCourses.push({
+            course: each,
+            modulesCourse: modules,
+            userCourse: user
+        })
+    });
+
+    console.log(vectorCourses)
     
     if (allCourses) {
         res.json({
             response: true,
-            data: allCourses
+            data: vectorCourses
         })
     }else{
         res.json({
@@ -298,6 +328,30 @@ indexCtrl.getAllTeacherCourses = async (req, res) => {
             message: "No hay cursos"
         })
     }
+}
+
+indexCtrl.eliminateCourse = async (req, res) => {
+    const { courseId } = req.body
+    if (courseId != "") {
+        const eliminateCourse = await Course.findOneAndDelete({_id: courseId})      
+        if (eliminateCourse) {
+            res.json({
+                response: true, 
+                message: "Se ha eliminado el curso"
+            })
+        }else{
+            res.json({
+                response: false,
+                message: "No se encontro el curso"
+            })
+        }
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor enviar el id del curso"
+        })
+    }
+
 }
 
 indexCtrl.addModule = async (req, res) => {
