@@ -4,7 +4,8 @@ const Course = require('../models/courses')
 const AttachmentCourses = require('../models/attachmentCourses')
 const ModuleCourses = require('../models/moduleCourses')
 const AttachmentModules = require('../models/attachmentModules')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const { compareSync } = require('bcryptjs');
 
 //Variables de ayuda
 var imagePath = "/var/www/html/hifive-rest-api/public/"
@@ -278,31 +279,24 @@ indexCtrl.getAllCourses = async (req, res) => {
 indexCtrl.getLastestCourses = async (req, res) => {
     const allCourses = await Course.find().sort({_id: -1}).limit(10)
 
-    let vectorCourses = []
+    let result = [];
 
-    allCourses.forEach(async (each) => {
-        console.log(each)
-        const modules = await ModuleCourses.find({coursesId: each._id}) 
-        const user = await User.find({_id: each.user_id})
+    for(let index = 0; index < allCourses.length; index++) {
+        const element = allCourses[index];
+                
+        const user = await User.findById(element.user_id)
 
+        result.push({course: element, userInfo:user})
+    }
         
-        vectorCourses.push({
-            course: each,
-            modulesCourse: modules,
-            userCourse: user
-        })
-    });
-
-    console.log(vectorCourses)
-    
     if (allCourses) {
         res.json({
             response: true,
-            data: vectorCourses
+            data: result
         })
     }else{
         res.json({
-            response: true,
+            response: false,
             message: "No hay curso disponible"
         })
     }
@@ -314,11 +308,13 @@ indexCtrl.getAllTeacherCourses = async (req, res) => {
     const coursesTeacher = await Course.find({user_id: user_id})
     const user = await User.findById(user_id)
 
+    const reverseResult = coursesTeacher.reverse()
+
     if (coursesTeacher) {
         res.json({
             response: true,
             data: {
-                coursesTeacher: coursesTeacher,
+                coursesTeacher: reverseResult,
                 userInfo: user
             }
         })
@@ -326,6 +322,33 @@ indexCtrl.getAllTeacherCourses = async (req, res) => {
         res.json({
             response: false,
             message: "No hay cursos"
+        })
+    }
+}
+
+indexCtrl.getAttachmentsOfCourse = async (req, res) => {
+    const { courseId } = req.body
+
+    if (courseId != "") {
+        
+        const attachmentsCourses = await AttachmentCourses.find({coursesId: courseId});
+
+        if (attachmentsCourses) {
+            res.json({
+                response: true, 
+                data: attachmentsCourses
+            })
+        } else {
+            res.json({
+                response: false,
+                message: "No hay attachment disponibles"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor mande el id del curso"
         })
     }
 }
@@ -441,6 +464,34 @@ indexCtrl.addModule = async (req, res) => {
         res.json({
             response: false, 
             message: "Por favor envie todo la informacion necesaria"
+        })
+    }
+}
+
+indexCtrl.getNamesModulesOfCourse = async (req, res) => {
+    const { courseId } = req.body;
+
+    if (courseId != "") {
+        
+        const modulesCourse = await ModuleCourses.find({coursesId: courseId}, 'title')
+        console.log(modulesCourse)
+
+        if (modulesCourse) {
+            res.json({
+                response: true,
+                data: modulesCourse
+            })
+        } else {
+            res.json({
+                response: false,
+                message: "No hay modulos disponibles"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false, 
+            message: "Por favor envie el id del curso"
         })
     }
 }

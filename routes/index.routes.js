@@ -17,12 +17,17 @@ router.post('/getAllTeacherCourses', controllers.getAllTeacherCourses)
 
 router.get('/getAllCourses', controllers.getAllCourses)
 
+router.get('/getLastestCourses', controllers.getLastestCourses)
+
+router.post('/eliminateCourse', controllers.eliminateCourse)
+
+router.post('/getAttachmentsOfCourse', controllers.getAttachmentsOfCourse)
+
+router.post('/getNamesModulesOfCourse', controllers.getNamesModulesOfCourse)
+
 router.post('/addModule', controllers.addModule)
 
 router.post('/getSingleModule', controllers.getSingleModule)
 
-router.get('/getLastestCourses', controllers.getLastestCourses)
-
-router.post('/eliminateCourse', controllers.eliminateCourse)
 
 module.exports = router;
