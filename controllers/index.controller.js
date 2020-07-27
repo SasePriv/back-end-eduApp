@@ -169,6 +169,8 @@ indexCtrl.login = async (req, res) => {
                     data: {
                             _id: userFind._id,
                             name: userFind.name,
+                            email: userFind.email,
+                            profile_image: userFind.profile_image,
                             typeOfUser: userFind.type_of_user,  
                             status_teacher: userFind.status_teacher,
                             token: "asdas"
