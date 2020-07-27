@@ -8,7 +8,7 @@ const UserSchema = new Schema({
     // online_status: {type: String, default: "inactive", enum: ['inactive', 'activo']},
     profile_image: {type: String, default: "dafaultUser.png"},
     // phone_number: {type: Number},
-    // email_Verification: {type: String, enum: ['no', 'yes'], default: "no"},
+    email_Verification: {type: String, enum: ['no', 'yes'], default: "no"},
     date_birth: {type: String},
     gender: {type: String, enum: ['male', 'female'], required: true},
     // type_of_membreship: {type: String, enum: ['free', 'pay'], default: 'free'}

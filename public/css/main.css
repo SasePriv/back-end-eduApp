@@ -1,0 +1,54 @@
+body {
+    background: #0080ff;
+}
+
+.center-every{
+    text-align: center;
+}
+
+.verification{
+    color: white;
+    margin-top: 20px;
+}
+
+.resetPassword{
+    margin-top: 20px;
+}
+
+.resetPassword h1{
+    color: white;
+}
+
+.resetPassword button{
+    color: #0080ff;
+    font-weight: 600;
+    background-color: white;
+    border: 0px;
+    -webkit-box-shadow: 8px 12px 14px -4px rgba(0,0,0,0.42);
+    -moz-box-shadow: 8px 12px 14px -4px rgba(0,0,0,0.42);
+    box-shadow: 8px 12px 14px -4px rgba(0,0,0,0.42);
+    margin-top: 10px;
+}
+
+
+.input-reset{
+    width: 60%;   
+    margin-left: auto;
+    margin-right: auto; 
+}
+
+.input-reset input{
+    -webkit-box-shadow: 8px 12px 14px -4px rgba(0,0,0,0.42);
+    -moz-box-shadow: 8px 12px 14px -4px rgba(0,0,0,0.42);
+    box-shadow: 8px 12px 14px -4px rgba(0,0,0,0.42);
+}
+
+.input-reset label{
+    color: white;
+}
+
+.textError{
+    color: #d80000;
+    font-size: 20px;
+    font-weight: 600;
+}
