@@ -5,6 +5,7 @@ const AttachmentCourses = require('../models/attachmentCourses')
 const ModuleCourses = require('../models/moduleCourses')
 const AttachmentModules = require('../models/attachmentModules')
 const Category = require('../models/cateogry')
+const AcquireCourses = require('../models/acquireCourses')
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
 
@@ -289,6 +290,8 @@ indexCtrl.changeForgetPassword = async (req, res) => {
     }
 }
 
+
+//Faltante
 indexCtrl.emailValidation = async (req, res) => {
     
 }
@@ -819,6 +822,36 @@ indexCtrl.getNamesModulesOfCourse = async (req, res) => {
     }
 }
 
+indexCtrl.getAllModulesOfCourse = async (req, res) => {
+    const {coursesId} = req.body;
+
+    if (coursesId != "") {
+        
+        const allModulos = await ModuleCourses.find({coursesId: coursesId})
+
+        if (allModulos.length) {
+            
+            res.json({
+                response: true,
+                data: allModulos 
+            })
+
+        } else {
+            res.json({
+                response: false,
+                message: "No se encontraron modulos para este curso"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor enviar los campos requeridos"
+        })
+    }
+
+}
+
 indexCtrl.getSingleModule = async (req, res) => {
     console.log( req.body)
     const { moduleId } = req.body
@@ -842,6 +875,31 @@ indexCtrl.getSingleModule = async (req, res) => {
     }
 }
 
+indexCtrl.getAttachmentsOfModule = async (req, res) => {
+    const {moduleId} = req.body;
+    if (moduleId != "") {
+        const allAttachtment = await AttachmentModules.find({moduleId})
+        if (allAttachtment.length) {
+            res.json({
+                response: true,
+                data: allAttachtment
+            })
+        } else {
+            res.json({
+                response: false,
+                message: "No se encontraron attachment de este modulo"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor enviar todos los datos necesarios"
+        })
+    }
+
+}
+
 indexCtrl.eliminateModules = async (req, res) =>{
     const { moduleId } = req.body
     if (moduleId != "") {
@@ -863,6 +921,144 @@ indexCtrl.eliminateModules = async (req, res) =>{
             message: "Por favor enviar el id del modulo"
         })
     }
+}
+
+indexCtrl.acquireCourse = async (req, res) => {
+    const { user_Id, coursesId, typeService} = req.body;
+
+    if (user_Id != "" && coursesId != "" && typeService != "") {
+        
+        if (typeService == "free") {
+            
+            const allAcquireCourse = await AcquireCourses.find({user_Id: user_Id});
+
+            // console.log("AllacquiereCourses", allAcquireCourse)
+
+            if (allAcquireCourse) {
+                
+                var existe = [];
+
+                for (let index = 0; index < allAcquireCourse.length; index++) {
+                    const element = allAcquireCourse[index];
+                    if (element.coursesId == coursesId) {
+                        existe.push(element)
+                    }
+                }
+
+                console.log("existe",existe)
+
+                if(!existe.length){
+
+                    const newAcquireCourse = new AcquireCourses({user_Id, coursesId, typeService});
+                    const data = newAcquireCourse.save()
+
+                    if (data) {
+                        res.json({
+                            response: true,
+                            data: {
+                                user_Id,
+                                coursesId
+                            }
+                        })
+                    }else{
+                        res.json({
+                            response: false, 
+                            message: "Ha ocurrido un error al guardar"
+                        })
+                    }
+
+                }else{
+
+                    res.json({
+                        response: false, 
+                        message: "Ya posee este curso"
+                    })
+
+                }
+
+            } else {
+                
+                console.log("entro aqui")
+
+                const newAcquireCourse = new AcquireCourses({user_id, coursesId, typeService});
+                const data = newAcquireCourse.save()
+
+                if (data) {
+                    res.json({
+                        response: true,
+                        data: {
+                            user_id,
+                            coursesId
+                        }
+                    })
+                }else{
+                    res.json({
+                        response: false, 
+                        message: "Ha ocurrido un error al guardar"
+                    })
+                }
+
+            }
+
+        } else {
+            res.json({
+                response: false,
+                message: "Esto curso no gratuito"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor envie los datos requeridos"
+
+        })
+    }
+}
+
+indexCtrl.getAcquiredCourses = async(req, res) => {
+    
+    const { user_id } = req.body;
+
+    console.log("user", user_id)
+
+    if (user_id != "") {
+
+        const allAcquireCourses = await AcquireCourses.find({user_Id: user_id});
+        let result = [];
+
+        if (allAcquireCourses) {
+            
+            for (let index = 0; index < allAcquireCourses.length; index++) {
+                const element = allAcquireCourses[index];
+                
+                const course = await Course.findById(element.coursesId);
+                const user = await User.findById(element.user_Id)
+
+                result.push({course: course, userInfo: user})
+            }
+
+            console.log("afuera", result)
+
+            res.json({
+                response: true,
+                data: result
+            })
+
+        } else {
+            res.json({
+                response: false, 
+                message: "No se encontro ningun curso adquirido"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor envie los datos necesarios"
+        })
+    }
+
 }
 
 

@@ -40,11 +40,21 @@ router.post('/getAttachmentsOfCourse', controllers.getAttachmentsOfCourse)
 
 router.post('/getNamesModulesOfCourse', controllers.getNamesModulesOfCourse)
 
+//AcquireCourses
+
+router.post('/acquireCourse', controllers.acquireCourse)
+
+router.post('/getAcquiredCourses', controllers.getAcquiredCourses)
+
 //Modulos
 
 router.post('/addModule', controllers.addModule)
 
 router.post('/getSingleModule', controllers.getSingleModule)
+
+router.post('/getAllModulesOfCourse', controllers.getAllModulesOfCourse)
+
+router.post('/getAttachmentsOfModule', controllers.getAttachmentsOfModule)
 
 //Categorias
 
