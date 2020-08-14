@@ -361,8 +361,9 @@ indexCtrl.addNewCategory = async (req, res) => {
             })
 
             let mainImage = imageName;
+            const titleUppercase = title.toUpperCase();
 
-            const newCategory = new Category({title, mainImage})
+            const newCategory = new Category({title: titleUppercase, mainImage})
             const data = await newCategory.save()
 
             if (data) {
@@ -727,36 +728,32 @@ indexCtrl.eliminateCourse = async (req, res) => {
 indexCtrl.addModule = async (req, res) => {
     console.log(req.body)
     console.log(req.files)
-    const {coursesId, title, contentText, type_of_video_source, files_for_donwload, contadorImage, contadorFiles} = req.body;
-    if(coursesId != "" && title != "" && contentText != "" && type_of_video_source != ""  && files_for_donwload != ""){
+    const {coursesId, title, contentText, files_for_donwload, contadorImage, contadorFiles} = req.body;
+    if(coursesId != "" && title != "" && contentText != "" && files_for_donwload != ""){
 
         let attachmentVideo;
 
-        if (type_of_video_source == "upload") {
-            if (req.files.attachmentVideo) {
-            
-                let videoFileName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.attachmentVideo.mimetype.split('/')[1];
-                let videoFile = req.files.attachmentVideo
+        if (req.files.attachmentVideo) {
+        
+            let videoFileName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.attachmentVideo.mimetype.split('/')[1];
+            let videoFile = req.files.attachmentVideo
 
-                videoFile.mv(process.cwd() + "/public/moduleVideos/" + videoFileName, function(err) {
-                    if (err) {
-                        return res.status(500).send(err);
-                    }
-                })
+            videoFile.mv(process.cwd() + "/public/moduleVideos/" + videoFileName, function(err) {
+                if (err) {
+                    return res.status(500).send(err);
+                }
+            })
 
-                attachmentVideo = videoFileName;
+            attachmentVideo = videoFileName;
 
-            } else {
-                res.json({
-                    response: false,
-                    message: "Por favor envie el video del modulo"
-                })
-            }
-        }else{
-            attachmentVideo = req.body.attachmentVideo
+        } else {
+            res.json({
+                response: false,
+                message: "Por favor envie el video del modulo"
+            })
         }
 
-        const newModule = new ModuleCourses({coursesId, title, contentText, type_of_video_source, files_for_donwload,attachmentVideo})
+        const newModule = new ModuleCourses({coursesId, title, contentText, files_for_donwload,attachmentVideo})
         const moduleData = await newModule.save()
 
         if (contadorImage > 0) {
@@ -1253,7 +1250,7 @@ indexCtrl.addCoin = async(req, res) => {
                 }
                 break
             case 'android.test.purchased':
-                walletUser.coins = walletUser.coins + 1000;
+                walletUser.coins = walletUser.coins + 2000;
                 newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
                 await walletUser.save()
                 data = await newPurchase.save();
