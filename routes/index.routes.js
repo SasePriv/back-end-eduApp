@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const controllers = require('../controllers/index.controller');
-const indexCtrl = require('../controllers/index.controller');
 
 router.get('/test', controllers.test)
 
@@ -60,6 +59,12 @@ router.post('/getAttachmentsOfModule', controllers.getAttachmentsOfModule)
 
 router.post('/getAllCoursesOfCategory', controllers.getAllCoursesOfCategory)
 
+//Coins
+
+router.post('/getUserWallet', controllers.getUserWallet)
+
+router.post('/addCoin', controllers.addCoin)
+
 //Admin
 
 router.post('/registerAdmin', controllers.registerAdmin);
@@ -78,6 +83,9 @@ router.get('/getAllCategory', controllers.getAllCategory)
 
 router.post('/eliminateOneCategory', controllers.eliminateOneCategory)
 
+
+//Dev 
+router.post('/addWallet', controllers.addWallet)
 
 
 module.exports = router;

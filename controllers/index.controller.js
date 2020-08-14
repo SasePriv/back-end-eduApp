@@ -6,6 +6,8 @@ const ModuleCourses = require('../models/moduleCourses')
 const AttachmentModules = require('../models/attachmentModules')
 const Category = require('../models/cateogry')
 const AcquireCourses = require('../models/acquireCourses')
+const Wallet = require('../models/wallet')
+const PurchasesInvoice = require('../models/purchasesInvoice')
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
 
@@ -79,6 +81,9 @@ indexCtrl.register = async (req, res) => {
             const newUser = new User({email, name, date_birth, gender, type_of_user, password});
             newUser.password = await newUser.encryptPassword(password);
             const data = await newUser.save();
+
+            const newWallet = new Wallet({user_Id: data._id});
+            await newWallet.save()
 
             const token = jwt.sign({id: newUser._id}, SECRET_TOKEN,{
                 expiresIn: 60 * 60 * 24 * 30
@@ -628,6 +633,22 @@ indexCtrl.getAllCoursesOfCategory = async (req, res) =>{
     }
 }
 
+indexCtrl.allCategorys = async(req, res) => {
+    const allCategory = await Category.find();
+
+    if (allCategory.length) {
+        res.json({
+            response: true,
+            data: allCategory
+        })
+    }else{
+        res.json({
+            response: false,
+            data: "No hay categorias disponibles"
+        })
+    }
+}
+
 indexCtrl.getAllTeacherCourses = async (req, res) => {
     const { user_id } = req.body;
     
@@ -1001,10 +1022,109 @@ indexCtrl.acquireCourse = async (req, res) => {
             }
 
         } else {
-            res.json({
-                response: false,
-                message: "Esto curso no gratuito"
-            })
+            // res.json({
+            //     response: false,
+            //     message: "Esto curso no gratuito"
+            // })
+
+            const { priceCoin } = req.body
+
+            console.log(req.body)
+
+            if (priceCoin != "") {
+
+                const allAcquireCourse = await AcquireCourses.find({user_Id: user_Id});
+
+                if (allAcquireCourse) {
+                
+                    var existe = [];
+    
+                    for (let index = 0; index < allAcquireCourse.length; index++) {
+                        const element = allAcquireCourse[index];
+                        if (element.coursesId == coursesId) {
+                            existe.push(element)
+                        }
+                    }
+    
+                    if(!existe.length){
+    
+                        const walletUser = await Wallet.findOne({user_Id: user_Id})
+
+                        console.log(walletUser)
+                        let x = priceCoin
+                        console.log(x)
+
+
+                        if (parseInt(walletUser.coins) >= priceCoin) {
+
+                            walletUser.coins = walletUser.coins - priceCoin;
+                            walletUser.save()
+
+                            const newAcquireCourse = new AcquireCourses({user_Id, coursesId, typeService});
+                            const data = newAcquireCourse.save()
+    
+                            if (data) {
+                                res.json({
+                                    response: true,
+                                    data: {
+                                        user_Id,
+                                        coursesId
+                                    }
+                                })
+                            }else{
+                                res.json({
+                                    response: false, 
+                                    message: "Ha ocurrido un error al guardar"
+                                })
+                            }
+                        } else {
+                            res.json({
+                                response: false,
+                                message: "No tienes suficientes monedas"
+                            })
+                        }
+    
+                    }else{
+    
+                        res.json({
+                            response: false, 
+                            message: "Ya posee este curso"
+                        })
+    
+                    }
+    
+                } else {
+                    
+                    console.log("entro aqui")
+    
+                    const newAcquireCourse = new AcquireCourses({user_id, coursesId, typeService});
+                    const data = newAcquireCourse.save()
+    
+                    if (data) {
+                        res.json({
+                            response: true,
+                            data: {
+                                user_id,
+                                coursesId
+                            }
+                        })
+                    }else{
+                        res.json({
+                            response: false, 
+                            message: "Ha ocurrido un error al guardar"
+                        })
+                    }
+    
+                }
+            } else {
+                res.json({
+                    response: false,
+                    message: "Por favor envie los parametros requeridos, 'precio' "
+                })
+            }
+
+            const allAcquireCourse = await AcquireCourses.find({user_Id: user_Id});
+
         }
 
     } else {
@@ -1038,11 +1158,9 @@ indexCtrl.getAcquiredCourses = async(req, res) => {
                 result.push({course: course, userInfo: user})
             }
 
-            console.log("afuera", result)
-
             res.json({
                 response: true,
-                data: result
+                data: result.reverse()
             })
 
         } else {
@@ -1059,6 +1177,128 @@ indexCtrl.getAcquiredCourses = async(req, res) => {
         })
     }
 
+}
+
+//Wallet
+
+indexCtrl.getUserWallet = async(req, res) => {
+    // console.log(req.body)
+    const { user_Id } = req.body;
+
+    if (user_Id != "") {
+        const userWallet = await Wallet.find(({user_Id}))
+        // console.log(userWallet)
+        if (userWallet) {
+            res.json({
+                response: true,
+                data: userWallet
+            })
+        } else {
+            res.json({
+                response: false, 
+                message: "No se encontro el usuario"
+            })
+        }
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor envie el id del usuario"
+        })
+    }
+}
+
+indexCtrl.addCoin = async(req, res) => {
+    console.log(req.body.orderId)
+    const { productId, orderId, transactionId, user_Id, walletId } = req.body;
+
+    if (productId != "" && orderId != "" && transactionId != "" && user_Id != "" && walletId != ""){
+        
+        let walletUser = await Wallet.findById(walletId)
+        let newPurchase = null;
+        let data = null;
+
+        switch(productId){
+            case '1000_monedas':
+                walletUser.coins = walletUser.coins + 1000;
+                newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
+                await walletUser.save()
+                data = await newPurchase.save();
+                if (data) {
+                    res.json({
+                        response: true,
+                        data,
+                    })
+                } else {
+                    res.json({
+                        response: false,
+                        message: "Hubo un problema al añadir la factura"
+                    })
+                }
+                break
+            case '2000_monedas':
+                walletUser.coins = walletUser.coins + 2000;
+                newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
+                await walletUser.save()
+                data = await newPurchase.save();
+                if (data) {
+                    res.json({
+                        response: true,
+                        data,
+                    })
+                } else {
+                    res.json({
+                        response: false,
+                        message: "Hubo un problema al añadir la factura"
+                    })
+                }
+                break
+            case 'android.test.purchased':
+                walletUser.coins = walletUser.coins + 1000;
+                newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
+                await walletUser.save()
+                data = await newPurchase.save();
+                if (data) {
+                    res.json({
+                        response: true,
+                        data,
+                    })
+                } else {
+                    res.json({
+                        response: false,
+                        message: "Hubo un problema al añadir la factura"
+                    })
+                }
+                break
+            default:
+                res.json({
+                    response: false,
+                    message: "No se encuentra el id del producto"
+                })
+                break
+        }
+
+    } else {
+        res.json({
+            response: false, 
+            message: "Por favor envia los parametros requeridos"
+        })
+    }
+}
+
+//Dev
+
+indexCtrl.addWallet = async (req, res) => {
+    const { user_Id } = req.body;
+
+    const newWallet = new Wallet({user_Id});
+    const data = await newWallet.save();
+
+    console.log(data)
+
+    res.json({
+        response: true,
+        data
+    })
 }
 
 
