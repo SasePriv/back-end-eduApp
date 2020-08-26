@@ -295,6 +295,156 @@ indexCtrl.changeForgetPassword = async (req, res) => {
     }
 }
 
+indexCtrl.changePassword = async (req, res) => {
+    const { user_Id, password, repeatPassword } = req.body;
+
+    console.log(req.body)
+
+    // console.log(password.toString() == repeatPassword.toString())
+
+    if (user_Id != "" && password != "", repeatPassword != "") {
+        if (password == repeatPassword) {
+            const userUpdate = await User.findById(user_Id);
+            
+            if (userUpdate) {
+                userUpdate.password = await userUpdate.encryptPassword(password);
+                await userUpdate.save();
+                
+                res.json({
+                    response: true,
+                    message: "Se ha actualizado la contraseña"
+                })
+
+            } else {
+                res.json({
+                    response: false,
+                    message: "No se encontro al usuario"
+                })
+            }
+
+        } else {
+            res.json({
+                response: false,
+                message: "Ambas contraseñas no coninciden"
+            })
+        }
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor enviar los parametros necesarios"
+        })
+    }
+}
+
+//Update User
+indexCtrl.updateInfoUser = async (req, res) => {
+    const { user_Id, name } = req.body;
+    let updateData = {}
+    if (user_Id != "") {
+        if (name != "") {
+            updateData.name = name;
+        }
+
+        if (req.files != null) {
+            if (req.files.imageUnique) {
+                let filename1 = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.imageUnique.mimetype.split('/')[1];
+                let fileImage = req.files.imageUnique;
+
+                fileImage.mv(process.cwd() + "/public/profileImages/"  + filename1, function(err) {
+                    if (err) {
+                        return res.status(500).send(err);
+                    }
+                })
+
+                let mainImage = filename1;
+
+                updateData.profile_image = mainImage;
+            }
+        }
+
+        if (updateData) {
+            
+            const filter = {_id: user_Id};
+            const updatedUser = await User.findByIdAndUpdate(filter, updateData, {new: true});
+
+            console.log(updatedUser)
+
+            if (updatedUser) {
+                res.json({
+                    response: true,
+                    data: updatedUser
+                })
+            } else {
+                res.json({
+                    respons: false,
+                    message: "No se pudo realizar los cambios"
+                })
+            }
+
+        }else{
+            res.json({
+                response: false,
+                message: "Nigun dato cambiado"
+            })
+        }
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor enviar el id del usuario"
+        })        
+    }
+
+}
+
+//Eliminate User
+indexCtrl.eliminateUser = async (req, res) => {
+    const { user_Id } = req.body;
+
+    if (user_Id != "") {
+
+        const userEliminate = await User.findByIdAndDelete(user_Id);
+
+        const walletEliminate = await Wallet.findOneAndDelete({user_Id: user_Id})
+
+        const arrayAcquiereCourses = await AcquireCourses.find({user_Id: user_Id});
+
+        for (let index = 0; index < arrayAcquiereCourses.length; index++) {            
+            await AcquireCourses.findByIdAndDelete(arrayAcquiereCourses[index]);
+        }
+
+        const arrayCourses = await Course.find({user_id: user_Id});
+
+        for (let index = 0; index < arrayCourses.length; index++) {
+            const arrayModules = await ModuleCourses.find({coursesId: arrayCourses[index]._id});
+            const arrayAttachmentCourse = await AttachmentCourses.find({coursesId: arrayCourses[index]._id});
+
+            for (let indexTwo = 0; indexTwo < arrayAttachmentCourse.length; indexTwo++) {
+                await AttachmentCourses.findByIdAndDelete(arrayAttachmentCourse[indexTwo]._id);
+            }
+
+            for (let indexThree = 0; indexThree < arrayModules.length; indexThree++) {
+                const arrayAttachmentModules = await AttachmentModules.find({moduleId: arrayModules[indexThree]._id})
+                for (let indexFour = 0; indexFour < arrayAttachmentModules.length; indexFour++) {
+                    await AttachmentModules.findByIdAndDelete(arrayAttachmentModules[indexFour]._id)
+                }
+                await ModuleCourses.findByIdAndDelete(arrayModules[indexThree]._id)
+            }
+
+            await Course.findByIdAndDelete(arrayCourses[index]._id)
+        }
+
+        res.json({
+            response: true,
+            message: "Se ha elminado el usuario"
+        })
+
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor enviar el id del usuario"
+        })
+    }
+}
 
 //Faltante
 indexCtrl.emailValidation = async (req, res) => {
@@ -436,7 +586,7 @@ indexCtrl.eliminateOneCategory = async (req, res) =>{
     }
 }
 
-indexCtrl.addCourse = async (req, res) => {
+indexCtrl.addCourse = async (req, res) => {r
     const {title, description, category, typeService, hours, price, contador, user_id} = req.body
 
     if (title != "" && description != "" && category != "" && typeService != "" && hours != "" && user_id != "") {
@@ -454,7 +604,7 @@ indexCtrl.addCourse = async (req, res) => {
 
                 let mainImage = filename1;
 
-                const newCourses = new Course({user_id,title, description, category: category.toLowerCase(), typeService, hours, price, mainImage})
+                const newCourses = new Course({user_id,title, description, category: category.toUpperCase(), typeService, hours, price, mainImage})
                 const data = await newCourses.save()
                 
                 if (contador > 0) {
@@ -511,6 +661,65 @@ indexCtrl.addCourse = async (req, res) => {
     }
 }
 
+indexCtrl.updateCourse = async (req, res) => {
+    const {
+        courseId,        
+        title,
+        description,
+        category,
+        typeService,
+        hours,
+        price,
+    } = req.body;
+
+    const dataUpdate = {
+        title,
+        description,
+        category,
+        typeService,
+        hours,
+        price,
+    }
+
+    if (courseId != "") {
+        if(req.files){
+            if(req.files.imageUnique){
+                let filename1 = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.imageUnique.mimetype.split('/')[1];
+                let fileImage = req.files.imageUnique;
+    
+                fileImage.mv(process.cwd() + "/public/coursesImages/"  + filename1, function(err) {
+                    if (err) {
+                        return res.status(500).send(err);
+                    }
+                })
+    
+                dataUpdate.mainImage = filename1;            
+            }
+        }
+
+        const updateCourse = await Course.findByIdAndUpdate({_id: courseId}, dataUpdate);
+
+        if (updateCourse) {
+            res.json({
+                response: true,
+                message: "Se ha actualizado el curso"
+            })
+        }else{
+            res.json({
+                response: false,
+                message: "Error en el servidor"
+            })
+        }
+
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor enviar el id del curso a actualizar"
+        })
+    }
+}
+
 indexCtrl.getSingleCourse = async (req, res) => {
     console.log(req.body)
     const {idCourse} = req.body
@@ -538,6 +747,36 @@ indexCtrl.getSingleCourse = async (req, res) => {
             response: false,
             message: "enviar el id del curso a solicitar"
         })
+    }
+}
+
+indexCtrl.getCourseForEdit = async (req, res) => {
+    console.log(req.body)
+    const {courseId} = req.body;
+
+    if (courseId != "") {
+        const course = await Course.findById(courseId);
+
+        if (course) {
+            const attachmentCourse = await AttachmentCourses.find({coursesId: courseId});
+            res.json({
+                response: true,
+                data:{                    
+                    course,
+                    attachmentCourse
+                }
+            })
+        } else {
+            res.json({
+                response: false,
+                message: "No se ha encontrado el modulo"
+            })
+        }
+    } else {
+        res.json({
+            response: false, 
+            message: "Por favor enviar el id del curso"
+        });
     }
 }
 
@@ -599,11 +838,14 @@ indexCtrl.getLastestCourses = async (req, res) => {
 
 indexCtrl.getAllCoursesOfCategory = async (req, res) =>{
     const {categoryTitle} = req.body;
+    const categoryUppercase = categoryTitle.toUpperCase();
     let vectorCourses = [];
     
+    console.log(categoryUppercase);
+
     if (categoryTitle != "") {
     
-        const courseCategory = await Course.find({category: categoryTitle});        
+        const courseCategory = await Course.find({category: categoryUppercase});        
 
         for (let index = 0; index < courseCategory.length; index++) {
             const element = courseCategory[index];
@@ -674,6 +916,56 @@ indexCtrl.getAllTeacherCourses = async (req, res) => {
     }
 }
 
+indexCtrl.addAttachmentCourse = async(req, res) => {
+    console.log(req.files);
+    console.log(req.body);
+
+    const { coursesId } = req.body;
+
+    if(req.files.imageUnique){
+        if (coursesId != "") {
+            
+            let filename1 = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.imageUnique.mimetype.split('/')[1];
+            let fileImage = req.files.imageUnique;
+
+            fileImage.mv(process.cwd() + "/public/coursesImages/" + filename1, function(err) {
+                if (err) {
+                    return res.status(500).send(err);
+                }
+            })
+
+            let attachment = filename1
+
+            const newAttachmentCourses = new AttachmentCourses({coursesId, attachment})
+            const result = await newAttachmentCourses.save()
+
+            if (result) {
+                res.json({
+                    response: true,
+                    message: "Se ha añadido una imagen"
+                })
+            }else{
+                res.json({
+                    response: false,
+                    message: "Error del servidor"
+                })
+            }
+
+        } else {
+            res.json({
+                reponse: false,
+                message: "Envie el id delc curso"
+            })
+        }
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor enviar una imagen"
+        })
+    }
+
+}
+
 indexCtrl.getAttachmentsOfCourse = async (req, res) => {
     const { courseId } = req.body
 
@@ -697,6 +989,37 @@ indexCtrl.getAttachmentsOfCourse = async (req, res) => {
         res.json({
             response: false,
             message: "Por favor mande el id del curso"
+        })
+    }
+}
+
+indexCtrl.eliminateAttachmentCourse = async (req, res) => {
+    const { attachment_Id } = req.body;
+
+    console.log(req.body);
+
+    if (attachment_Id != "") {
+        
+        const elinateAttachment = await AttachmentCourses.findByIdAndDelete(attachment_Id);
+
+        console.log(elinateAttachment)
+
+        if (elinateAttachment) {
+            res.json({
+                response: true,
+                message: "Se he eliminado"
+            })
+        } else {
+            res.json({
+                response: false,
+                message:  "Error al eliminar"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor mandar el id del attachment"
         })
     }
 }
@@ -812,6 +1135,60 @@ indexCtrl.addModule = async (req, res) => {
     }
 }
 
+indexCtrl.updateModule = async (req, res) => {
+
+    const {
+        moduleId,        
+        title,
+        contentText,
+    } = req.body;
+
+    const dataUpdate = {
+        title,
+        contentText,
+    }
+
+    if (moduleId != "") {
+        if(req.files){
+            if (req.files.attachmentVideo) {
+        
+                let videoFileName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.attachmentVideo.mimetype.split('/')[1];
+                let videoFile = req.files.attachmentVideo
+    
+                videoFile.mv(process.cwd() + "/public/moduleVideos/" + videoFileName, function(err) {
+                    if (err) {
+                        return res.status(500).send(err);
+                    }
+                })
+    
+                dataUpdate.attachmentVideo = videoFileName;
+    
+            }
+        }
+        
+        const updateModule = await ModuleCourses.findByIdAndUpdate({_id: moduleId}, dataUpdate);
+
+        if (updateModule) {
+            res.json({
+                response: true,
+                message: "Se ha actualizado el curso"
+            })
+        }else{
+            res.json({
+                response: false,
+                message: "Error en el servidor"
+            })
+        }
+
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor enviar el id del modulo a actualizar"
+        })
+    }
+}
+
 indexCtrl.getNamesModulesOfCourse = async (req, res) => {
     const { courseId } = req.body;
 
@@ -918,7 +1295,124 @@ indexCtrl.getAttachmentsOfModule = async (req, res) => {
 
 }
 
-indexCtrl.eliminateModules = async (req, res) =>{
+indexCtrl.addAttachmentsModule = async (req, res) => {
+    const { type_of_Attachment, moduleId } = req.body;
+
+    if (moduleId) {
+        if (type_of_Attachment == "file") {
+                    
+            if (req.files.fileUnique) {
+                let file = req.files.fileUnique
+                let filename = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + file.mimetype.split('/')[1];
+
+                file.mv(process.cwd() + "/public/moduleFiles/" + filename, function(err) {
+                    if (err) {
+                        return res.status(500).send(err);
+                    }
+                })
+
+                let attachment = filename
+
+                const newAttachmentModules = new AttachmentModules({moduleId, attachment, nameOfFile: file.name ,type_of_Attachment: 'file'})
+                const result = await newAttachmentModules.save()
+
+                if (result) {
+                    res.json({
+                        response: true,
+                        message: "Se ha añadido un documento"
+                    })
+                }else{
+                    res.json({
+                        response: false,
+                        message: "Error del servidor"
+                    })
+                }
+
+            } else {
+                res.json({
+                    response: false,
+                    message: "No ha enviado ningun archivo"
+                })
+            }
+
+        }else if(type_of_Attachment == "image"){
+    
+            if (req.files.imageUnique) {                
+                    let filename1 = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.imageUnique.mimetype.split('/')[1];
+                    let fileImage = req.files.imageUnique;
+        
+                    fileImage.mv(process.cwd() + "/public/moduleImages/" + filename1, function(err) {
+                        if (err) {
+                            return res.status(500).send(err);
+                        }
+                    })
+        
+                    let attachment = filename1
+        
+                    const newAttachmentModules = new AttachmentModules({moduleId, attachment, nameOfFile: fileImage.name ,type_of_Attachment: 'image'});
+                    const result = await newAttachmentModules.save()
+        
+                    if (result) {
+                        res.json({
+                            response: true,
+                            message: "Se ha añadido una imagen"
+                        })
+                    }else{
+                        res.json({
+                            response: false,
+                            message: "Error del servidor"
+                        })
+                    }                   
+            } else {
+                res.json({
+                    respons: false,
+                    message: "Por favor mandar el id del modulo"
+                })
+            }
+
+        }else{
+            res.json({
+                response: false,
+                message: "Por favor mandar el tipo de archivo"
+            })
+        }
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor mandar el id del modulo"
+        })
+    }
+}
+
+indexCtrl.eliminateAttachmentsModule = async (req, res) => {
+    const { attachment_Id } = req.body;
+
+
+    if (attachment_Id != "") {
+        
+        const elinateAttachment = await AttachmentModules.findByIdAndDelete(attachment_Id);
+
+        if (elinateAttachment) {
+            res.json({
+                response: true,
+                message: "Se he eliminado"
+            })
+        } else {
+            res.json({
+                response: false,
+                message:  "Error al eliminar"
+            })
+        }
+
+    } else {
+        res.json({
+            response: false,
+            message: "Por favor mandar el id del attachment"
+        })
+    }
+}
+
+indexCtrl.eliminateModule = async (req, res) =>{
     const { moduleId } = req.body
     if (moduleId != "") {
         const eliminateModule = await ModuleCourses.findOneAndDelete({_id: moduleId})      
@@ -1284,19 +1778,19 @@ indexCtrl.addCoin = async(req, res) => {
 
 //Dev
 
-indexCtrl.addWallet = async (req, res) => {
-    const { user_Id } = req.body;
+// indexCtrl.addWallet = async (req, res) => {
+//     const { user_Id } = req.body;
 
-    const newWallet = new Wallet({user_Id});
-    const data = await newWallet.save();
+//     const newWallet = new Wallet({user_Id});
+//     const data = await newWallet.save();
 
-    console.log(data)
+//     console.log(data)
 
-    res.json({
-        response: true,
-        data
-    })
-}
+//     res.json({
+//         response: true,
+//         data
+//     })
+// }
 
 
 module.exports = indexCtrl;

@@ -4,7 +4,8 @@
   "description": "backend del sistema de eduacion app",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "start": "nodemon index.js"
   },
   "repository": {
     "type": "git",
