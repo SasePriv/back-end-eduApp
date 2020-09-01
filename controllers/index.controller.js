@@ -586,7 +586,7 @@ indexCtrl.eliminateOneCategory = async (req, res) =>{
     }
 }
 
-indexCtrl.addCourse = async (req, res) => {r
+indexCtrl.addCourse = async (req, res) => {
     const {title, description, category, typeService, hours, price, contador, user_id} = req.body
 
     if (title != "" && description != "" && category != "" && typeService != "" && hours != "" && user_id != "") {
