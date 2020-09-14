@@ -506,6 +506,7 @@ indexCtrl.addNewCategory = async (req, res) => {
 
             imageFile.mv(process.cwd() + "/public/categoryImages/"  + imageName, function(err) {
                 if (err) {
+                    console.log("Aqui hay un error")
                     return res.status(500).send(err);
                 }
             })
