@@ -10,10 +10,11 @@ const Wallet = require('../models/wallet')
 const PurchasesInvoice = require('../models/purchasesInvoice')
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
+const path = require('path');
 
 //Variables de ayuda
 var imagePath = "/var/www/html/hifive-rest-api/public/"
-var serverPath = "http://localhost:4000"
+var serverPath = "http://68.183.137.102:4000"
 const {SECRET_TOKEN} = process.env;
 
 //Nodemailer configuration
@@ -504,7 +505,8 @@ indexCtrl.addNewCategory = async (req, res) => {
             let imageName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.categoryImage.mimetype.split('/')[1];
             let imageFile = req.files.categoryImage;
 
-            console.log(req.files)
+            console.log(__dirname)
+            console.log(process.cwd())
 
             imageFile.mv(process.cwd() + "/public/categoryImages/"  + imageName, function(err) {
                 if (err) {                    
