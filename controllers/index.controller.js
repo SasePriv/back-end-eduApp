@@ -505,6 +505,7 @@ indexCtrl.addNewCategory = async (req, res) => {
             let imageName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.categoryImage.mimetype.split('/')[1];
             let imageFile = req.files.categoryImage;
 
+            console.log(req.files.categoryImage)
             console.log(__dirname)
             console.log(process.cwd())
 
