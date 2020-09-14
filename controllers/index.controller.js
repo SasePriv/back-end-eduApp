@@ -519,10 +519,10 @@ indexCtrl.addNewCategory = async (req, res) => {
             const data = await newCategory.save()
 
             if (data) {
-                res.json({
-                    response: true,
-                    data,
-                })
+                // res.json({
+                //     response: true,
+                //     data,
+                // })
 
                 return;
             }else{
