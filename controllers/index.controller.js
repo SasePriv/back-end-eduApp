@@ -504,9 +504,10 @@ indexCtrl.addNewCategory = async (req, res) => {
             let imageName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.categoryImage.mimetype.split('/')[1];
             let imageFile = req.files.categoryImage;
 
+            console.log(req.files)
+
             imageFile.mv(process.cwd() + "/public/categoryImages/"  + imageName, function(err) {
-                if (err) {
-                    console.log("Aqui hay un error")
+                if (err) {                    
                     return res.status(500).send(err);
                 }
             })
