@@ -1436,7 +1436,7 @@ indexCtrl.eliminateModule = async (req, res) =>{
 }
 
 indexCtrl.acquireCourse = async (req, res) => {
-    const { user_Id, coursesId, typeService} = req.body;
+    const { user_Id, profesor_id, coursesId, typeService} = req.body;
 
     if (user_Id != "" && coursesId != "" && typeService != "") {
         
@@ -1522,7 +1522,7 @@ indexCtrl.acquireCourse = async (req, res) => {
 
             console.log(req.body)
 
-            if (priceCoin != "") {
+            if (priceCoin != "" && profesor_id != "") {
 
                 const allAcquireCourse = await AcquireCourses.find({user_Id: user_Id});
 
@@ -1553,6 +1553,14 @@ indexCtrl.acquireCourse = async (req, res) => {
 
                             const newAcquireCourse = new AcquireCourses({user_Id, coursesId, typeService});
                             const data = newAcquireCourse.save()
+
+                            //Adding coins to the teacher
+
+                            const teacherUser = await User.findById(profesor_id);
+                            const teacherWallet = await Wallet.find({user_Id: teacherUser._id});
+
+                            teacherWallet.conis = teacherWallet.conis + priceCoin;
+                            teacherWallet.save();
     
                             if (data) {
                                 res.json({
