@@ -1802,8 +1802,8 @@ indexCtrl.addCoin = async(req, res) => {
 
 indexCtrl.addAdminUser = async (req, res) => {
     const errors = []
-    const {email, name, date_birth, gender, type_of_user, password} = req.body;
-    if (email != "" && name != "" && date_birth != "" && gender != "" && type_of_user != "" && password != "") {
+    const {email, name, date_birth, gender, password} = req.body;
+    if (email != "" && name != "" && date_birth != "" && gender != "" && password != "") {
         if (password.length < 6) {
             errors.push({message: "La contraseña tiene que ser mayor de 6 caracteres"})
         }
