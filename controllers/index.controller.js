@@ -517,8 +517,6 @@ indexCtrl.addNewCategory = async (req, res) => {
             const newCategory = new Category({title: titleUppercase, mainImage})
             const data = await newCategory.save()
 
-            console.log(data)
-
             if (data) {
                 res.json({
                     response: true,
