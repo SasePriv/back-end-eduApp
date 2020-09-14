@@ -1800,5 +1800,56 @@ indexCtrl.addCoin = async(req, res) => {
 //     })
 // }
 
+indexCtrl.addAdminUser = async (req, res) => {
+    const errors = []
+    const {email, name, date_birth, gender, type_of_user, password} = req.body;
+    if (email != "" && name != "" && date_birth != "" && gender != "" && type_of_user != "" && password != "") {
+        if (password.length < 6) {
+            errors.push({message: "La contraseña tiene que ser mayor de 6 caracteres"})
+        }
+        const emailUser = await User.findOne({email});
+        if (emailUser) {
+            errors.push({message: "El correo ya esta en uso"})
+        }
+        
+        if (!errors.length > 0) {
+            const newUser = new User({email, name, date_birth, gender, type_of_user: "admin", password});
+            newUser.password = await newUser.encryptPassword(password);
+            const data = await newUser.save();
+
+            const newWallet = new Wallet({user_Id: data._id});
+            await newWallet.save()
+
+            const token = jwt.sign({id: newUser._id}, SECRET_TOKEN,{
+                expiresIn: 60 * 60 * 24 * 30
+            })
+            //Respuesta del servidor que manda los datos del usuario registrado
+            res.json({
+                response: true,
+                message: "Se ha registrado un nuevo usuario",
+                data: {
+                    _id: data._id,
+                    name: data.name,
+                    typeOfUser: data.type_of_user,  
+                    status_teacher: data.status_teacher,
+                    token,
+                }
+                
+                
+            })
+        }else{
+            res.json({
+                response: false,
+                message: errors[0].message
+            })
+        }
+    }else{
+        res.json({
+            response: false,
+            message: "Por favor envie todos los datos requeridos"
+        })
+    }
+}
+
 
 module.exports = indexCtrl;

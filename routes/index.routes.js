@@ -114,6 +114,7 @@ router.post('/eliminateOneCategory', controllers.eliminateOneCategory)
 
 //Dev 
 // router.post('/addWallet', controllers.addWallet)
+router.post('/addAdminUser', controllers.addAdminUser)
 
 
 module.exports = router;
