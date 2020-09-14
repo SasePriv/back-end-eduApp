@@ -505,10 +505,6 @@ indexCtrl.addNewCategory = async (req, res) => {
             let imageName = Date.now() + Math.floor(1000 + Math.random() * 9000) + '.' + req.files.categoryImage.mimetype.split('/')[1];
             let imageFile = req.files.categoryImage;
 
-            console.log(req.files.categoryImage)
-            console.log(__dirname)
-            console.log(process.cwd())
-
             imageFile.mv(process.cwd() + "/public/categoryImages/"  + imageName, function(err) {
                 if (err) {                    
                     return res.status(500).send(err);
@@ -520,6 +516,8 @@ indexCtrl.addNewCategory = async (req, res) => {
 
             const newCategory = new Category({title: titleUppercase, mainImage})
             const data = await newCategory.save()
+
+            console.log(data)
 
             if (data) {
                 res.json({
