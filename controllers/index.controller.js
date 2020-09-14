@@ -525,9 +525,7 @@ indexCtrl.addNewCategory = async (req, res) => {
                 res.json({
                     response: true,
                     data,
-                })
-
-                return;
+                })                
             }else{
                 res.json({
                     response: false,
