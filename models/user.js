@@ -6,7 +6,7 @@ const UserSchema = new Schema({
     name: {type:String, required: true},
     password: {type: String, required: true},
     // online_status: {type: String, default: "inactive", enum: ['inactive', 'activo']},
-    profile_image: {type: String, default: "dafaultUser.png"},
+    profile_image: {type: String, default: "userProfileImages.jpg"},
     // phone_number: {type: Number},
     email_Verification: {type: String, enum: ['no', 'yes'], default: "no"},
     date_birth: {type: String},
