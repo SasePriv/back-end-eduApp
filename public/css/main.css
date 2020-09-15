@@ -1,5 +1,6 @@
 body {
-    background: #0080ff;
+    background: rgb(229,90,91);
+    background: linear-gradient(90deg, rgba(229,90,91,1) 0%, rgba(254,223,103,1) 100%);
 }
 
 .center-every{
@@ -20,7 +21,7 @@ body {
 }
 
 .resetPassword button{
-    color: #0080ff;
+    color: #e55a5b;
     font-weight: 600;
     background-color: white;
     border: 0px;
