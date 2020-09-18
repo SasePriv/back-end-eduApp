@@ -1719,7 +1719,7 @@ indexCtrl.addCoin = async(req, res) => {
 
         switch(productId){
             case '1000_monedas':
-                walletUser.coins = walletUser.coins + 1000;
+                walletUser.coins = walletUser.coins + 1750;
                 newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
                 await walletUser.save()
                 data = await newPurchase.save();
@@ -1736,7 +1736,7 @@ indexCtrl.addCoin = async(req, res) => {
                 }
                 break
             case '2000_monedas':
-                walletUser.coins = walletUser.coins + 2000;
+                walletUser.coins = walletUser.coins + 3500;
                 newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
                 await walletUser.save()
                 data = await newPurchase.save();
@@ -1752,8 +1752,8 @@ indexCtrl.addCoin = async(req, res) => {
                     })
                 }
                 break
-            case 'android.test.purchased':
-                walletUser.coins = walletUser.coins + 2000;
+            case '3000_monedas':
+                walletUser.coins = walletUser.coins + 5250;
                 newPurchase = new PurchasesInvoice({walletId, user_Id, productId, orderId, transactionId})
                 await walletUser.save()
                 data = await newPurchase.save();
