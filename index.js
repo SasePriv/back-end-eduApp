@@ -5,14 +5,21 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const multer = require('multer');
 const http = require('http');
+const https = require("https");
 const cors = require('cors')
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
+const fs = require("fs");
 
 
 //Initiliazations
 const app = express();
-const server = http.createServer(app)
+// const server = http.createServer(app)
+var options = {
+    key: fs.readFileSync("../server.key"),
+    cert: fs.readFileSync("../server.cert"),    
+};
+const server = https.createServer(options, app);
 const upload = multer()
 require('./database');
 
