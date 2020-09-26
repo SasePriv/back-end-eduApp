@@ -15,11 +15,7 @@ const fs = require("fs");
 //Initiliazations
 const app = express();
 // const server = http.createServer(app)
-var options = {
-    key: fs.readFileSync("../server.key"),
-    cert: fs.readFileSync("../server.cert"),    
-};
-const server = https.createServer(options, app);
+const server = http.createServer(app);
 const upload = multer()
 require('./database');
 
